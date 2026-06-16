@@ -1,0 +1,43 @@
+{
+  "name": "listeddb",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "seed": "tsx scripts/seed.ts && tsx scripts/enrich-sectors.ts",
+    "seed:base": "tsx scripts/seed.ts",
+    "enrich": "tsx scripts/enrich-sectors.ts",
+    "enrich:fin": "tsx scripts/enrich-financials.ts",
+    "enrich:own": "tsx scripts/enrich-ownership.ts",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@libsql/client": "^0.17.3",
+    "@next/third-parties": "^16.2.9",
+    "@prisma/client": "^6.19.3",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
+    "csv-parse": "^7.0.0",
+    "next": "16.2.9",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20.19.43",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.9",
+    "playwright": "^1.60.0",
+    "prisma": "^6.19.3",
+    "sharp": "^0.35.1",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.4",
+    "typescript": "^5"
+  }
+}

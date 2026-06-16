@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #0D1B2A;
+  --color-ink-soft: #1B2A3F;
+  --color-ink-2: #2F3E55;
+  --color-paper: #F5F7FA;
+  --color-paper-warm: #FAF7F0;
+  --color-paper-2: #ECEFF4;
+  --color-rule: #D6DCE3;
+  --color-rule-strong: #98A2B3;
+  --color-mute: #4B5563;
+  --color-mute-2: #6B7280;
+  --color-saffron: #FF9500;
+  --color-saffron-dim: #955200;   /* AA text contrast (5.6:1) on paper */
+  --color-bull: #117A39;          /* AA text contrast (5:1) on paper */
+  --color-bear: #C81E1E;          /* AA text contrast (5.3:1) on paper */
+
+  --font-display: var(--font-display), ui-serif, Georgia, serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --radius-card: 2px;
+}
+
+* { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+html, body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-feature-settings: "ss01", "cv11";
+}
+
+body { font-size: 15px; line-height: 1.6; font-weight: 400; }
+
+::selection { background: var(--color-saffron); color: var(--color-ink); }
+
+/* Display face — Fraunces at a refined, readable semibold (not heavy) */
+.font-display {
+  font-family: var(--font-display);
+  font-weight: 560;
+  letter-spacing: -0.011em;
+}
+.font-mono   { font-family: var(--font-mono); font-weight: 500; font-feature-settings: "tnum", "zero"; }
+
+/* Headings: semibold display, calm and legible */
+h1, h2, h3 { font-weight: 560; }
+
+/* Eyebrow / label — in components layer so text-* utilities can override the
+   default color (e.g. light eyebrows on the dark footer). */
+@layer components {
+  .eyebrow {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--color-mute);
+  }
+}
+
+/* Numeric tabular */
+.tnum { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
+
+/* Hairline */
+.rule { border-color: var(--color-rule); }
+
+/* Focus */
+:focus-visible {
+  outline: 2px solid var(--color-saffron);
+  outline-offset: 2px;
+}
+
+/* Pulse animation for live market cap signature */
+@keyframes pulseRing {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 149, 0, 0.55); }
+  70%  { box-shadow: 0 0 0 14px rgba(255, 149, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 149, 0, 0); }
+}
+.market-pulse::after {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 999px;
+  animation: pulseRing 2.4s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Tape scroller for homepage hero */
+@keyframes tape {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+.tape-track {
+  animation: tape 90s linear infinite;
+  will-change: transform;
+}
+.tape-pause:hover .tape-track { animation-play-state: paused; }
+
+@media (prefers-reduced-motion: reduce) {
+  .tape-track { animation: none; }
+  .market-pulse::after { animation: none; }
+}
+
+/* Bar segment helper */
+.shseg { height: 14px; transition: background .2s; }
+
+/* Table row hover */
+.row-hover:hover { background: var(--color-paper-2); }
+
+/* Long-form content (about / legal pages) */
+.prose-body { color: var(--color-ink-soft); font-size: 16px; line-height: 1.75; }
+.prose-body h2 {
+  font-family: var(--font-display);
+  font-size: 26px; font-weight: 560; letter-spacing: -0.011em;
+  color: var(--color-ink); margin: 2.2rem 0 0.6rem;
+}
+.prose-body h3 {
+  font-size: 16px; font-weight: 600; color: var(--color-ink); margin: 1.4rem 0 0.4rem;
+}
+.prose-body p { margin: 0 0 1rem; }
+.prose-body ul { margin: 0 0 1rem; padding-left: 1.25rem; list-style: disc; }
+.prose-body li { margin: 0.3rem 0; }
+.prose-body a { color: var(--color-saffron-dim); text-decoration: underline; text-underline-offset: 2px; }
+.prose-body strong { font-weight: 600; color: var(--color-ink); }
+.prose-body :first-child { margin-top: 0; }
