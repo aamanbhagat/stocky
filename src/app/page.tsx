@@ -3,7 +3,6 @@ import { Tape } from "@/components/Tape";
 import { LiveSearch } from "@/components/LiveSearch";
 import { SectorGrid } from "@/components/SectorGrid";
 import { CompanyCard } from "@/components/CompanyCard";
-import { AdSlot } from "@/components/AdSlot";
 import { crFromCr, num } from "@/lib/format";
 import Link from "next/link";
 
@@ -79,10 +78,6 @@ export default async function HomePage() {
         <SectorGrid />
       </section>
 
-      <div className="max-w-[1280px] mx-auto px-6">
-        <AdSlot position="mid" />
-      </div>
-
       <section className="max-w-[1280px] mx-auto px-6 py-16 border-t border-rule">
         <header className="flex items-end justify-between gap-6 mb-8 flex-wrap">
           <div>
@@ -101,10 +96,6 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
-
-      <div className="max-w-[1280px] mx-auto px-6">
-        <AdSlot position="bottom" />
-      </div>
     </>
   );
 }

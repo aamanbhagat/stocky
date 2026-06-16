@@ -69,6 +69,9 @@ export const metadata: Metadata = {
   },
   category: "finance",
   other: { "google-adsense-account": ADSENSE_CLIENT },
+  ...(process.env.GOOGLE_SITE_VERIFICATION
+    ? { verification: { google: process.env.GOOGLE_SITE_VERIFICATION } }
+    : {}),
 };
 
 export const viewport = {

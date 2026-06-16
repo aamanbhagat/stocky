@@ -7,6 +7,7 @@ import { sectorColor } from "@/lib/sectors";
 import { crFromCr } from "@/lib/format";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { AdSlot } from "@/components/AdSlot";
+import { SITE_URL as SITE } from "@/lib/site";
 
 export const revalidate = 604800;
 
@@ -63,8 +64,37 @@ export default async function ExchangePage({
   const fullName = exchange === "nse" ? "National Stock Exchange" : "Bombay Stock Exchange";
   const totalPages = Math.max(1, Math.ceil(total / PER));
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: SITE },
+          { "@type": "ListItem", position: 2, name, item: `${SITE}/exchange/${exchange}` },
+        ],
+      },
+      {
+        "@type": "CollectionPage",
+        name: `${fullName} (${name}) listed companies`,
+        url: `${SITE}/exchange/${exchange}`,
+        mainEntity: {
+          "@type": "ItemList",
+          numberOfItems: total,
+          itemListElement: rows.slice(0, 50).map((c, i) => ({
+            "@type": "ListItem",
+            position: (page - 1) * PER + i + 1,
+            url: `${SITE}/companies/${c.slug}`,
+            name: c.name,
+          })),
+        },
+      },
+    ],
+  };
+
   return (
     <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <div className="border-b border-rule bg-paper-warm">
         <div className="max-w-[1280px] mx-auto px-6 pt-6 pb-12">
           <Breadcrumb items={[{ href: "/", label: "Home" }, { label: name }]} />
