@@ -1,0 +1,16 @@
+{
+  "siteName": "FinanceCity",
+  "siteUrl": "https://financecity.me",
+  "niche": "Indian stock market — NSE/BSE listed companies, fundamentals, sectors, IPOs and investing basics",
+  "audience": "Indian retail investors researching listed companies, sectors and how the markets work",
+  "topicGuidance": "Prefer practical investing topics: how to read a company's fundamentals, sector overviews, IPO explainers, index basics (Nifty/Sensex), and beginner investing guides. Avoid specific buy/sell tips or hallucinated prices.",
+  "coverColors": ["#0c1f17", "#15803d"],
+  "categories": [
+    { "slug": "investing", "name": "Investing Basics" },
+    { "slug": "companies", "name": "Companies & Sectors" },
+    { "slug": "markets", "name": "Markets" }
+  ],
+  "authors": [
+    { "slug": "financecity-desk", "name": "FinanceCity Desk" }
+  ]
+}

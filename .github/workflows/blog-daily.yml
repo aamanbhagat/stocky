@@ -1,0 +1,47 @@
+name: Daily SEO blog post
+
+on:
+  schedule:
+    # 04:30 UTC daily (~10:00 IST). Adjust as needed.
+    - cron: "30 4 * * *"
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many posts to generate"
+        default: "1"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: blog-daily
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Generate post(s)
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          BLOG_MODEL: ${{ vars.BLOG_MODEL || 'claude-sonnet-4-6' }}
+          BLOG_COUNT: ${{ github.event.inputs.count || '1' }}
+        run: node scripts/generate-blog-post.mjs
+
+      - name: Commit & push
+        run: |
+          git config user.name "blog-bot"
+          git config user.email "blog-bot@users.noreply.github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add content/blog public/blog
+            git commit -m "blog: auto-generated post ($(date -u +%Y-%m-%d))"
+            git push
+          else
+            echo "No new content."
+          fi
