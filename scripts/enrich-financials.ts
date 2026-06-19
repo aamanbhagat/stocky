@@ -12,8 +12,23 @@
  *      DETAIL_TOP=5010 pnpm enrich:fin   (detailed for all — slow)
  */
 import { PrismaClient } from "@prisma/client";
+import { PrismaLibSQL } from "@prisma/adapter-libsql";
 
-const prisma = new PrismaClient();
+// Write to the remote Turso DB when DATABASE_URL is a libSQL/remote URL (the
+// daily cloud cron), else fall back to the local SQLite file for dev.
+function makePrisma(): PrismaClient {
+  const url = process.env.DATABASE_URL ?? "file:./dev.db";
+  if (/^(libsql:|wss?:|https?:)/.test(url)) {
+    const adapter = new PrismaLibSQL({
+      url,
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    });
+    return new PrismaClient({ adapter });
+  }
+  return new PrismaClient();
+}
+
+const prisma = makePrisma();
 
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36";

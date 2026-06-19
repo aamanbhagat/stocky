@@ -9,7 +9,7 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { AdSlot } from "@/components/AdSlot";
 import { SITE_URL as SITE } from "@/lib/site";
 
-export const revalidate = 604800;
+export const revalidate = 86400; // daily — stock data refreshed by the daily cron
 
 export function generateStaticParams() {
   return [{ exchange: "nse" }, { exchange: "bse" }];

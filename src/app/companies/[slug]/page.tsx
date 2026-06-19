@@ -16,7 +16,7 @@ import { AdSlot } from "@/components/AdSlot";
 import { SITE_URL as SITE, BRAND } from "@/lib/site";
 
 // Weekly ISR
-export const revalidate = 604800;
+export const revalidate = 86400; // daily — stock data refreshed by the daily cron
 
 export async function generateStaticParams() {
   const top = await prisma.company.findMany({

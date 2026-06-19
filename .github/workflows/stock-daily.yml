@@ -1,0 +1,45 @@
+name: Daily stock data refresh
+
+on:
+  schedule:
+    # 12:30 UTC = 18:00 IST, after the NSE/BSE close (15:30 IST) settles.
+    # Weekdays only — markets are shut on weekends.
+    - cron: "30 12 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      detailTop:
+        description: "How many companies get the detailed (Phase B) pull"
+        default: "1500"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stock-daily
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps (runs prisma generate via postinstall)
+        run: pnpm install --frozen-lockfile
+
+      - name: Refresh financials from Yahoo → Turso
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          DETAIL_TOP: ${{ github.event.inputs.detailTop || '1500' }}
+        run: pnpm enrich:fin
