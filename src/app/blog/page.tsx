@@ -4,6 +4,7 @@ import { getAllPosts } from "@/lib/blog";
 import styles from "./blog.module.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "";
+const ACCENT = process.env.NEXT_PUBLIC_BLOG_ACCENT || "#16a34a";
 
 export const revalidate = 3600;
 
@@ -24,44 +25,54 @@ function fmtDate(iso: string): string {
 export default function BlogIndex() {
   const posts = getAllPosts();
   return (
-    <main className={styles.wrap}>
-      <header className={styles.head}>
-        <h1 className={styles.h1}>Blog</h1>
-        <p className={styles.lede}>Guides, explainers and how-tos.</p>
-      </header>
+    <div className={styles.scope} style={{ ["--accent" as string]: ACCENT }}>
+      <main className={styles.wrap}>
+        <header className={styles.head}>
+          <p className={styles.eyebrow}>The Journal</p>
+          <h1 className={styles.h1}>Blog</h1>
+          <p className={styles.lede}>
+            Clear, practical guides and explainers — written to be read, not
+            skimmed.
+          </p>
+        </header>
 
-      {posts.length === 0 ? (
-        <p className={styles.empty}>No posts yet — check back soon.</p>
-      ) : (
-        <ul className={styles.grid}>
-          {posts.map((p) => (
-            <li key={p.slug} className={styles.card}>
-              <Link href={`/blog/${p.slug}`} className={styles.cardLink}>
-                {p.frontmatter.cover && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    className={styles.cover}
-                    src={p.frontmatter.cover}
-                    alt={p.frontmatter.coverAlt || p.frontmatter.title}
-                    width={1200}
-                    height={630}
-                    loading="lazy"
-                  />
-                )}
-                <div className={styles.cardBody}>
-                  <span className={styles.cat}>{p.frontmatter.category}</span>
-                  <h2 className={styles.cardTitle}>{p.frontmatter.title}</h2>
-                  <p className={styles.cardDesc}>{p.frontmatter.description}</p>
-                  <span className={styles.meta}>
-                    {fmtDate(p.frontmatter.publishedAt)} ·{" "}
-                    {p.readingTimeMinutes} min read
-                  </span>
-                </div>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      )}
-    </main>
+        {posts.length === 0 ? (
+          <p className={styles.empty}>Nothing published yet. Check back soon.</p>
+        ) : (
+          <ul className={styles.feed}>
+            {posts.map((p) => (
+              <li key={p.slug} className={styles.row}>
+                <Link href={`/blog/${p.slug}`} className={styles.rowLink}>
+                  {p.frontmatter.cover && (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      className={styles.thumb}
+                      src={p.frontmatter.cover}
+                      alt={p.frontmatter.coverAlt || p.frontmatter.title}
+                      width={1200}
+                      height={630}
+                      loading="lazy"
+                    />
+                  )}
+                  <div>
+                    <p className={styles.rowMeta}>
+                      <span className={styles.rowCat}>
+                        {p.frontmatter.category}
+                      </span>
+                      <span className={styles.dot}>·</span>
+                      <span>{fmtDate(p.frontmatter.publishedAt)}</span>
+                      <span className={styles.dot}>·</span>
+                      <span>{p.readingTimeMinutes} min</span>
+                    </p>
+                    <h2 className={styles.rowTitle}>{p.frontmatter.title}</h2>
+                    <p className={styles.rowDesc}>{p.frontmatter.description}</p>
+                  </div>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </main>
+    </div>
   );
 }

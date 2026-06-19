@@ -6,12 +6,16 @@
  * draft a niche-matched article, validates the frontmatter, writes the MDX to
  * content/blog/<slug>.mdx and a branded SVG cover to public/blog/<slug>/cover.svg.
  *
- *   ANTHROPIC_API_KEY=... node scripts/generate-blog-post.mjs
+ *   AI_GATEWAY_API_KEY=... node scripts/generate-blog-post.mjs
  *
  * Env:
- *   ANTHROPIC_API_KEY  (required)
- *   BLOG_MODEL         (optional, default claude-sonnet-4-6)
- *   BLOG_COUNT         (optional, default 1 — how many posts this run)
+ *   AI_GATEWAY_API_KEY  (required — Vercel AI Gateway key, vck_…)
+ *   BLOG_MODEL          (optional, default anthropic/claude-haiku-4.5)
+ *   BLOG_COUNT          (optional, default 1 — how many posts this run)
+ *
+ * Calls the Vercel AI Gateway (OpenAI-compatible). The gateway is rate limited
+ * (~2 req/min), so requests retry with backoff on 429/5xx and multi-post runs
+ * space themselves out.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -21,8 +25,9 @@ const CONFIG_PATH = path.join(ROOT, "blog.config.json");
 const BLOG_DIR = path.join(ROOT, "content", "blog");
 const PUBLIC_BLOG_DIR = path.join(ROOT, "public", "blog");
 
-const API_KEY = process.env.ANTHROPIC_API_KEY;
-const MODEL = process.env.BLOG_MODEL || "claude-sonnet-4-6";
+const API_KEY = process.env.AI_GATEWAY_API_KEY || process.env.ANTHROPIC_API_KEY;
+const MODEL = process.env.BLOG_MODEL || "anthropic/claude-haiku-4.5";
+const GATEWAY_URL = "https://ai-gateway.vercel.sh/v1/chat/completions";
 const COUNT = Math.max(1, parseInt(process.env.BLOG_COUNT || "1", 10));
 
 function die(msg) {
@@ -30,7 +35,9 @@ function die(msg) {
   process.exit(1);
 }
 
-if (!API_KEY) die("ANTHROPIC_API_KEY is not set.");
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+if (!API_KEY) die("AI_GATEWAY_API_KEY is not set.");
 if (!fs.existsSync(CONFIG_PATH)) die("blog.config.json not found in repo root.");
 
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
@@ -73,27 +80,48 @@ function pick(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 
-// ── Anthropic call ───────────────────────────────────────────
+// ── Vercel AI Gateway call (OpenAI-compatible) with backoff ──────
 async function callClaude(prompt) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": API_KEY,
-      "anthropic-version": "2023-06-01",
-      "content-type": "application/json",
-    },
-    body: JSON.stringify({
-      model: MODEL,
-      max_tokens: 4096,
-      messages: [{ role: "user", content: prompt }],
-    }),
-  });
-  if (!res.ok) {
+  const maxAttempts = 6;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    let res;
+    try {
+      res = await fetch(GATEWAY_URL, {
+        method: "POST",
+        headers: {
+          authorization: `Bearer ${API_KEY}`,
+          "content-type": "application/json",
+        },
+        body: JSON.stringify({
+          model: MODEL,
+          max_tokens: 4096,
+          messages: [{ role: "user", content: prompt }],
+        }),
+      });
+    } catch (e) {
+      if (attempt === maxAttempts) die(`Network error: ${e.message}`);
+      await sleep(attempt * 5000);
+      continue;
+    }
+    if (res.ok) {
+      const json = await res.json();
+      const content = json.choices?.[0]?.message?.content;
+      if (!content) die(`Empty completion: ${JSON.stringify(json).slice(0, 400)}`);
+      return content;
+    }
+    // Rate limited or transient — back off and retry.
+    if (res.status === 429 || res.status >= 500) {
+      const retryAfter = Number(res.headers.get("retry-after"));
+      const wait = (retryAfter ? retryAfter : 35 * attempt) * 1000;
+      if (attempt === maxAttempts) die(`Gateway ${res.status} after ${maxAttempts} tries.`);
+      console.log(`  rate limited (${res.status}); waiting ${wait / 1000}s…`);
+      await sleep(wait);
+      continue;
+    }
     const body = await res.text();
-    die(`Anthropic API ${res.status}: ${body.slice(0, 500)}`);
+    die(`Gateway ${res.status}: ${body.slice(0, 500)}`);
   }
-  const json = await res.json();
-  return json.content.map((b) => b.text || "").join("");
+  die("Unreachable");
 }
 
 function buildPrompt(avoid) {
@@ -187,6 +215,25 @@ async function generateOne() {
   // strip accidental code fences
   mdx = mdx.replace(/^```(mdx|markdown)?\n/, "").replace(/\n```$/, "").trim();
 
+  // Quote string frontmatter values so colons/apostrophes in titles or
+  // descriptions can't break the YAML parse.
+  mdx = mdx.replace(
+    /^(---\n)([\s\S]*?)(\n---)/,
+    (_m, open, body, close) => {
+      const fixed = body
+        .split("\n")
+        .map((line) => {
+          const kv = /^(title|description|coverAlt|cover):\s*(.+)$/.exec(line);
+          if (!kv) return line;
+          let val = kv[2].trim().replace(/^['"]|['"]$/g, "");
+          val = val.replace(/'/g, "''"); // escape single quotes for YAML
+          return `${kv[1]}: '${val}'`;
+        })
+        .join("\n");
+      return open + fixed + close;
+    },
+  );
+
   const fm = extractFrontmatter(mdx);
   if (!fm || !fm.title) die("Generated output missing valid frontmatter/title.");
   const slug = slugify(fm.title);
@@ -194,6 +241,9 @@ async function generateOne() {
 
   // Replace SLUG token in figure paths with the real slug.
   mdx = mdx.replace(/\/blog\/SLUG\//g, `/blog/${slug}/`);
+
+  // Drop a leading H1 in the body — the page renders the title itself.
+  mdx = mdx.replace(/^(---\n[\s\S]*?\n---\n+)#\s+.+\n+/, "$1");
 
   // Inject a cover reference if absent.
   if (!/^cover:/m.test(mdx)) {
@@ -224,6 +274,7 @@ async function generateOne() {
 
 const written = [];
 for (let i = 0; i < COUNT; i++) {
+  if (i > 0) await sleep(35000); // stay under ~2 req/min
   const s = await generateOne();
   if (s) written.push(s);
 }

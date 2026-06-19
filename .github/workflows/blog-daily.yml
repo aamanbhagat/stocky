@@ -2,8 +2,9 @@ name: Daily SEO blog post
 
 on:
   schedule:
-    # 04:30 UTC daily (~10:00 IST). Adjust as needed.
-    - cron: "30 4 * * *"
+    # Staggered per project (see header) so the shared AI Gateway key (~2 req/min)
+    # is never hit by two repos at once. Override this line per repo.
+    - cron: "0 5 * * *"
   workflow_dispatch:
     inputs:
       count:
@@ -29,8 +30,8 @@ jobs:
 
       - name: Generate post(s)
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          BLOG_MODEL: ${{ vars.BLOG_MODEL || 'claude-sonnet-4-6' }}
+          AI_GATEWAY_API_KEY: ${{ secrets.AI_GATEWAY_API_KEY }}
+          BLOG_MODEL: ${{ vars.BLOG_MODEL || 'anthropic/claude-haiku-4.5' }}
           BLOG_COUNT: ${{ github.event.inputs.count || '1' }}
         run: node scripts/generate-blog-post.mjs
 

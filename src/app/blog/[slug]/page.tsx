@@ -14,6 +14,7 @@ import styles from "../blog.module.css";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "";
 const SITE_NAME = process.env.NEXT_PUBLIC_SITE_NAME || "";
+const ACCENT = process.env.NEXT_PUBLIC_BLOG_ACCENT || "#16a34a";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -79,63 +80,75 @@ export default async function BlogPost({ params }: Params) {
   };
 
   return (
-    <main className={styles.article}>
+    <div className={styles.scope} style={{ ["--accent" as string]: ACCENT }}>
+      <span className={styles.progress} aria-hidden />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }}
       />
-      <nav className={styles.crumbs}>
-        <Link href="/blog">Blog</Link> <span aria-hidden>/</span>{" "}
-        <span>{fm.category}</span>
-      </nav>
+      <main className={styles.article}>
+        <nav className={styles.crumbs}>
+          <Link href="/blog">Blog</Link>{" "}
+          <span aria-hidden>/</span> <span>{fm.category}</span>
+        </nav>
 
-      <header className={styles.articleHead}>
-        <span className={styles.cat}>{fm.category}</span>
-        <h1 className={styles.h1}>{fm.title}</h1>
-        <p className={styles.meta}>
-          {fmtDate(fm.publishedAt)} · {post.readingTimeMinutes} min read
-        </p>
-      </header>
+        <header className={styles.articleHead}>
+          <p className={styles.eyebrow}>{fm.category}</p>
+          <h1 className={styles.title}>{fm.title}</h1>
+          <p className={styles.dateline}>
+            <span>{fm.author}</span>
+            <span className={styles.dot}>·</span>
+            <span>{fmtDate(fm.publishedAt)}</span>
+            <span className={styles.dot}>·</span>
+            <span>{post.readingTimeMinutes} min read</span>
+          </p>
+        </header>
 
-      {fm.cover && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          className={styles.hero}
-          src={fm.cover}
-          alt={fm.coverAlt || fm.title}
-          width={1200}
-          height={630}
-          fetchPriority="high"
-        />
-      )}
+        {fm.cover && (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img
+            className={styles.hero}
+            src={fm.cover}
+            alt={fm.coverAlt || fm.title}
+            width={1200}
+            height={630}
+            fetchPriority="high"
+          />
+        )}
 
-      <article className={styles.prose}>
-        <MDXRemote
-          source={post.content}
-          options={{
-            mdxOptions: {
-              remarkPlugins: [remarkGfm],
-              rehypePlugins: [
-                rehypeSlug,
-                [rehypeAutolinkHeadings, { behavior: "wrap" }],
-              ],
-            },
-          }}
-        />
-      </article>
+        <article className={styles.prose}>
+          <MDXRemote
+            source={post.content}
+            options={{
+              mdxOptions: {
+                remarkPlugins: [remarkGfm],
+                rehypePlugins: [
+                  rehypeSlug,
+                  [rehypeAutolinkHeadings, { behavior: "wrap" }],
+                ],
+              },
+            }}
+          />
+        </article>
 
-      {related.length > 0 && (
-        <section className={styles.related}>
-          <h2>Related reading</h2>
-          <ul>
-            {related.map((r) => (
-              <li key={r.slug}>
-                <Link href={`/blog/${r.slug}`}>{r.frontmatter.title}</Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-    </main>
+        {related.length > 0 && (
+          <section className={styles.related}>
+            <h2 className={styles.relatedTitle}>Keep reading</h2>
+            <ul className={styles.relatedList}>
+              {related.map((r, i) => (
+                <li key={r.slug} className={styles.relatedItem}>
+                  <span className={styles.relatedIndex}>
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <Link href={`/blog/${r.slug}`} className={styles.relatedLink}>
+                    {r.frontmatter.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+      </main>
+    </div>
   );
 }
