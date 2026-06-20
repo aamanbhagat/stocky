@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { SECTORS } from "@/lib/sectors";
 import { slugify } from "@/lib/slug";
 import { SITE_URL as SITE } from "@/lib/site";
+import { getAllPosts } from "@/lib/blog";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const companies = await prisma.company.findMany({
@@ -10,6 +11,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   const now = new Date();
+
+  const blogPages = [
+    {
+      url: `${SITE}/blog`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.6,
+    },
+    ...getAllPosts().map((p) => ({
+      url: `${SITE}/blog/${p.slug}`,
+      lastModified: new Date(p.frontmatter.updatedAt || p.frontmatter.publishedAt),
+      changeFrequency: "monthly" as const,
+      priority: 0.6,
+    })),
+  ];
 
   const staticPages = ["/about", "/contact", "/privacy", "/disclaimer"].map((p) => ({
     url: `${SITE}${p}`,
@@ -50,6 +66,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.7,
     })),
     ...staticPages,
+    ...blogPages,
     ...companies.map((c) => ({
       url: `${SITE}/companies/${c.slug}`,
       lastModified: c.updatedAt,
