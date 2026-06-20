@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#0c1f17"/><stop offset="1" stop-color="#15803d"/>
+  </linearGradient></defs>
+  <rect width="1200" height="630" fill="url(#g)"/>
+  <text x="80" y="120" font-family="system-ui,Segoe UI,Arial" font-size="26" fill="#cbd5e1" letter-spacing="3">INVESTING</text>
+  <text x="80" y="300" font-family="system-ui,Segoe UI,Arial" font-size="64" font-weight="700" fill="#ffffff"><tspan x="80" dy="0">How to Read Debt to</tspan><tspan x="80" dy="76">Equity Ratio in Indian</tspan><tspan x="80" dy="76">Stocks</tspan></text>
+  <text x="80" y="560" font-family="system-ui,Segoe UI,Arial" font-size="30" font-weight="600" fill="#e2e8f0">FinanceCity</text>
+</svg>
