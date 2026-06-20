@@ -1,114 +1,147 @@
 {
   "version": 1,
   "siteBirth": "2026-06-19",
-  "lastRunAt": "2026-06-20T12:54:56.095Z",
+  "lastRunAt": "2026-06-20T12:59:56.840Z",
   "runs": [
     {
-      "ts": "2026-06-20T12:49:25.526Z",
-      "phase": "seed",
-      "category": "markets",
-      "keywordTier": "long-tail",
-      "primaryKeyword": "how stocks are selected for Nifty 50 index",
-      "title": "How Stocks Are Selected for Nifty 50 Index",
-      "slug": "how-stocks-are-selected-for-nifty-50-index",
-      "wordCount": 2252
-    },
-    {
-      "ts": "2026-06-20T12:54:56.095Z",
+      "ts": "2026-06-20T12:49:28.994Z",
       "phase": "seed",
       "category": "investing",
       "keywordTier": "long-tail",
-      "primaryKeyword": "what is face value of a share in stock market",
-      "title": "What is face value of a share in stock market explained",
-      "slug": "what-is-face-value-of-a-share-in-stock-market-explained",
-      "wordCount": 2328
+      "primaryKeyword": "what is promoter pledging in Indian stocks",
+      "title": "What Is Promoter Pledging in Indian Stocks? Explained",
+      "slug": "what-is-promoter-pledging-in-indian-stocks-explained",
+      "wordCount": 2664
+    },
+    {
+      "ts": "2026-06-20T12:52:59.451Z",
+      "phase": "seed",
+      "category": "investing",
+      "keywordTier": "long-tail",
+      "primaryKeyword": "how to read debt to equity ratio in Indian stocks",
+      "title": "How to Read Debt to Equity Ratio in Indian Stocks",
+      "slug": "how-to-read-debt-to-equity-ratio-in-indian-stocks",
+      "wordCount": 2721
+    },
+    {
+      "ts": "2026-06-20T12:59:56.840Z",
+      "phase": "seed",
+      "category": "markets",
+      "keywordTier": "long-tail",
+      "primaryKeyword": "what is free float market capitalization in nifty 50",
+      "title": "What Is Free Float Market Capitalization in Nifty 50",
+      "slug": "what-is-free-float-market-capitalization-in-nifty-50",
+      "wordCount": 1997
     }
   ],
   "usedKeywords": [
-    "how stocks are selected for Nifty 50 index",
-    "what is face value of a share in stock market"
+    "what is promoter pledging in Indian stocks",
+    "how to read debt to equity ratio in Indian stocks",
+    "what is free float market capitalization in nifty 50"
   ],
   "usedTitles": [
-    "How Stocks Are Selected for Nifty 50 Index",
-    "What is face value of a share in stock market explained"
+    "What Is Promoter Pledging in Indian Stocks? Explained",
+    "How to Read Debt to Equity Ratio in Indian Stocks",
+    "What Is Free Float Market Capitalization in Nifty 50"
   ],
   "usedSlugs": [
-    "how-stocks-are-selected-for-nifty-50-index",
-    "what-is-face-value-of-a-share-in-stock-market-explained"
+    "what-is-promoter-pledging-in-indian-stocks-explained",
+    "how-to-read-debt-to-equity-ratio-in-indian-stocks",
+    "what-is-free-float-market-capitalization-in-nifty-50"
   ],
   "clusters": {
-    "Nifty 50": {
-      "members": [
-        "how-stocks-are-selected-for-nifty-50-index"
-      ],
-      "primaryKeywords": [
-        "how stocks are selected for Nifty 50 index"
-      ]
-    },
-    "Index Construction": {
-      "members": [
-        "how-stocks-are-selected-for-nifty-50-index"
-      ],
-      "primaryKeywords": [
-        "how stocks are selected for Nifty 50 index"
-      ]
-    },
-    "NSE": {
-      "members": [
-        "how-stocks-are-selected-for-nifty-50-index"
-      ],
-      "primaryKeywords": [
-        "how stocks are selected for Nifty 50 index"
-      ]
-    },
-    "Market Mechanics": {
-      "members": [
-        "how-stocks-are-selected-for-nifty-50-index"
-      ],
-      "primaryKeywords": [
-        "how stocks are selected for Nifty 50 index"
-      ]
-    },
-    "Stock Market Basics": {
-      "members": [
-        "what-is-face-value-of-a-share-in-stock-market-explained"
-      ],
-      "primaryKeywords": [
-        "what is face value of a share in stock market"
-      ]
-    },
     "Fundamental Analysis": {
       "members": [
-        "what-is-face-value-of-a-share-in-stock-market-explained"
+        "what-is-promoter-pledging-in-indian-stocks-explained",
+        "how-to-read-debt-to-equity-ratio-in-indian-stocks",
+        "what-is-free-float-market-capitalization-in-nifty-50"
       ],
       "primaryKeywords": [
-        "what is face value of a share in stock market"
+        "what is promoter pledging in Indian stocks",
+        "how to read debt to equity ratio in Indian stocks",
+        "what is free float market capitalization in nifty 50"
+      ]
+    },
+    "Promoter Holding": {
+      "members": [
+        "what-is-promoter-pledging-in-indian-stocks-explained"
+      ],
+      "primaryKeywords": [
+        "what is promoter pledging in Indian stocks"
+      ]
+    },
+    "Shareholding Pattern": {
+      "members": [
+        "what-is-promoter-pledging-in-indian-stocks-explained"
+      ],
+      "primaryKeywords": [
+        "what is promoter pledging in Indian stocks"
+      ]
+    },
+    "Risk Assessment": {
+      "members": [
+        "what-is-promoter-pledging-in-indian-stocks-explained"
+      ],
+      "primaryKeywords": [
+        "what is promoter pledging in Indian stocks"
+      ]
+    },
+    "Financial Ratios": {
+      "members": [
+        "how-to-read-debt-to-equity-ratio-in-indian-stocks"
+      ],
+      "primaryKeywords": [
+        "how to read debt to equity ratio in Indian stocks"
       ]
     },
     "Investing Basics": {
       "members": [
-        "what-is-face-value-of-a-share-in-stock-market-explained"
+        "how-to-read-debt-to-equity-ratio-in-indian-stocks"
       ],
       "primaryKeywords": [
-        "what is face value of a share in stock market"
+        "how to read debt to equity ratio in Indian stocks"
       ]
     },
-    "Share Valuation": {
+    "Balance Sheet": {
       "members": [
-        "what-is-face-value-of-a-share-in-stock-market-explained"
+        "how-to-read-debt-to-equity-ratio-in-indian-stocks"
       ],
       "primaryKeywords": [
-        "what is face value of a share in stock market"
+        "how to read debt to equity ratio in Indian stocks"
+      ]
+    },
+    "Markets": {
+      "members": [
+        "what-is-free-float-market-capitalization-in-nifty-50"
+      ],
+      "primaryKeywords": [
+        "what is free float market capitalization in nifty 50"
+      ]
+    },
+    "Nifty 50": {
+      "members": [
+        "what-is-free-float-market-capitalization-in-nifty-50"
+      ],
+      "primaryKeywords": [
+        "what is free float market capitalization in nifty 50"
+      ]
+    },
+    "Index Basics": {
+      "members": [
+        "what-is-free-float-market-capitalization-in-nifty-50"
+      ],
+      "primaryKeywords": [
+        "what is free float market capitalization in nifty 50"
       ]
     }
   },
   "phaseHistory": [
     {
-      "ts": "2026-06-20T12:49:25.526Z",
+      "ts": "2026-06-20T12:49:28.994Z",
       "phase": "seed"
     }
   ],
   "notes": [
-    "For the next run, create a foundational investing basics cluster by publishing \"Difference between face value and market value of a share\" to capture high-intent beginner traffic, and internally link it directly to your newly published face value post to build topical authority."
+    "Next run, extend the fundamental risk metrics cluster by publishing a guide on the Interest Coverage Ratio, and internally link it to the Debt to Equity and Promoter Pledging posts to build a cohesive \"Fundamental Risk Analysis for FY 2026-27\" hub."
   ]
 }
