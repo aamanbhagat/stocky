@@ -4,10 +4,12 @@ import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import { SECTORS, sectorColor } from "@/lib/sectors";
 import { slugify } from "@/lib/slug";
-import { crFromCr } from "@/lib/format";
 import { LiveSearch } from "@/components/LiveSearch";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { AdSlot } from "@/components/AdSlot";
+import { LiveQuoteProvider } from "@/components/LiveQuoteProvider";
+import { LiveCap } from "@/components/LiveCap";
+import { seedQuotes } from "@/lib/liveSeed";
 
 export const revalidate = 3600;
 
@@ -136,6 +138,7 @@ export default async function Directory({
             <p className="font-mono text-[11px] text-mute-2">Sorted: {sort === "cap" ? "market cap desc" : "alphabetical"}</p>
           </div>
 
+          <LiveQuoteProvider seed={seedQuotes(rows)}>
           <div className="border-t border-b border-ink divide-y divide-rule">
             {rows.length === 0 && (
               <p className="py-12 text-center text-mute">No companies match these filters.</p>
@@ -154,11 +157,12 @@ export default async function Directory({
                 <span className="col-span-5 md:col-span-6 font-display text-[17px] text-ink truncate">{c.name}</span>
                 <span className="col-span-3 md:col-span-2 text-[12px] text-mute-2 truncate">{c.sector ?? "—"}</span>
                 <span className="col-span-2 text-right font-mono text-[12px] tnum text-ink">
-                  {c.marketCap ? crFromCr(c.marketCap) : "—"}
+                  <LiveCap symbol={c.yahooSymbol} seed={c.marketCap} />
                 </span>
               </Link>
             ))}
           </div>
+          </LiveQuoteProvider>
 
           <Pagination page={page} totalPages={totalPages} hrefFor={(p) => baseHref({ page: String(p) })} />
 

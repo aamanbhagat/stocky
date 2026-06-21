@@ -1,15 +1,16 @@
-import { prisma } from "@/lib/prisma";
 import Link from "next/link";
+import { LiveCap } from "@/components/LiveCap";
+
+export type TapeRow = {
+  symbol: string;
+  slug: string;
+  name: string;
+  marketCap: number | null;
+  yahooSymbol: string | null;
+};
 
 /** Live exchange-board ticker tape across the top of the homepage hero. */
-export async function Tape() {
-  const rows = await prisma.company.findMany({
-    where: { marketCap: { not: null } },
-    orderBy: { marketCap: "desc" },
-    take: 30,
-    select: { symbol: true, slug: true, marketCap: true, name: true },
-  });
-
+export function Tape({ rows }: { rows: TapeRow[] }) {
   // Duplicate so the linear-translate loop seamlessly tiles
   const tiled = [...rows, ...rows];
 
@@ -25,7 +26,7 @@ export async function Tape() {
             <span className="tracking-wider">{c.symbol}</span>
             <span className="text-saffron">●</span>
             <span className="tnum text-paper/80">
-              ₹{(((c.marketCap ?? 0) / 1e5).toFixed(2))}L Cr
+              <LiveCap symbol={c.yahooSymbol} seed={c.marketCap} />
             </span>
           </Link>
         ))}

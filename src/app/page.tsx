@@ -3,13 +3,15 @@ import { Tape } from "@/components/Tape";
 import { LiveSearch } from "@/components/LiveSearch";
 import { SectorGrid } from "@/components/SectorGrid";
 import { CompanyCard } from "@/components/CompanyCard";
+import { LiveQuoteProvider } from "@/components/LiveQuoteProvider";
+import { seedQuotes } from "@/lib/liveSeed";
 import { crFromCr, num } from "@/lib/format";
 import Link from "next/link";
 
 export const revalidate = 3600;
 
 export default async function HomePage() {
-  const [total, nseCount, bseCount, totalCapAgg, topByCap] = await Promise.all([
+  const [total, nseCount, bseCount, totalCapAgg, topByCap, tapeRows] = await Promise.all([
     prisma.company.count(),
     prisma.company.count({ where: { exchange: { in: ["NSE", "BOTH"] } } }),
     prisma.company.count({ where: { exchange: { in: ["BSE", "BOTH"] } } }),
@@ -19,9 +21,16 @@ export default async function HomePage() {
       orderBy: { marketCap: "desc" },
       take: 8,
     }),
+    prisma.company.findMany({
+      where: { marketCap: { not: null } },
+      orderBy: { marketCap: "desc" },
+      take: 30,
+      select: { symbol: true, slug: true, name: true, marketCap: true, yahooSymbol: true },
+    }),
   ]);
 
   const totalCapCr = totalCapAgg._sum.marketCap ?? 0;
+  const liveSeed = seedQuotes([...tapeRows, ...topByCap]);
   const stamp = new Intl.DateTimeFormat("en-IN", {
     day: "2-digit",
     month: "short",
@@ -29,8 +38,8 @@ export default async function HomePage() {
   }).format(new Date());
 
   return (
-    <>
-      <Tape />
+    <LiveQuoteProvider seed={liveSeed}>
+      <Tape rows={tapeRows} />
 
       <section className="border-b border-rule">
         <div className="max-w-[1280px] mx-auto px-6 pt-14 pb-16 grid lg:grid-cols-12 gap-10">
@@ -96,7 +105,7 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
-    </>
+    </LiveQuoteProvider>
   );
 }
 

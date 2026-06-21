@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Company } from "@prisma/client";
 import { sectorColor } from "@/lib/sectors";
-import { crFromCr } from "@/lib/format";
+import { LiveCap } from "@/components/LiveCap";
 
 export function CompanyCard({ c, compact = false }: { c: Company; compact?: boolean }) {
   const color = sectorColor(c.sector);
@@ -27,7 +27,7 @@ export function CompanyCard({ c, compact = false }: { c: Company; compact?: bool
               {c.sector ?? "—"}
             </p>
             <p className="font-mono text-[13px] tnum text-ink">
-              {c.marketCap ? crFromCr(c.marketCap) : "—"}
+              <LiveCap symbol={c.yahooSymbol} seed={c.marketCap} />
             </p>
           </div>
         )}

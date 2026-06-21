@@ -7,6 +7,9 @@ import { slugify } from "@/lib/slug";
 import { crFromCr } from "@/lib/format";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { AdSlot } from "@/components/AdSlot";
+import { LiveQuoteProvider } from "@/components/LiveQuoteProvider";
+import { LiveCap } from "@/components/LiveCap";
+import { seedQuotes } from "@/lib/liveSeed";
 import { SITE_URL as SITE } from "@/lib/site";
 
 export const revalidate = 86400; // daily — stock data refreshed by the daily cron
@@ -131,6 +134,7 @@ export default async function SectorPage({
       </div>
 
       <section className="max-w-[1280px] mx-auto px-6 pb-16">
+        <LiveQuoteProvider seed={seedQuotes(rows)}>
         <div className="border-t border-b border-ink divide-y divide-rule">
           {rows.map((c) => (
             <Link
@@ -143,11 +147,12 @@ export default async function SectorPage({
               <span className="col-span-6 font-display text-[17px] text-ink truncate">{c.name}</span>
               <span className="col-span-2 text-[12px] text-mute-2">{c.exchange}</span>
               <span className="col-span-2 text-right font-mono text-[12px] tnum text-ink">
-                {c.marketCap ? crFromCr(c.marketCap) : "—"}
+                <LiveCap symbol={c.yahooSymbol} seed={c.marketCap} />
               </span>
             </Link>
           ))}
         </div>
+        </LiveQuoteProvider>
       </section>
 
       <div className="max-w-[1280px] mx-auto px-6">

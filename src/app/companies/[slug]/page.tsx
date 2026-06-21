@@ -10,7 +10,11 @@ import { Breadcrumb } from "@/components/Breadcrumb";
 import { MetricCell } from "@/components/MetricCell";
 import { Shareholding } from "@/components/Shareholding";
 import { MarketPulse } from "@/components/MarketPulse";
-import { PriceBadge } from "@/components/PriceBadge";
+import { LivePrice } from "@/components/LivePrice";
+import { LiveMetrics } from "@/components/LiveMetrics";
+import { LiveMarketCap } from "@/components/LiveMarketCap";
+import { LiveQuoteProvider } from "@/components/LiveQuoteProvider";
+import { seedQuotes } from "@/lib/liveSeed";
 import { CompanyCard } from "@/components/CompanyCard";
 import { AdSlot } from "@/components/AdSlot";
 import { SITE_URL as SITE, BRAND } from "@/lib/site";
@@ -94,6 +98,22 @@ export default async function CompanyPage(
 
   const color = sectorColor(c.sector);
   const exLabel = c.exchange === "BOTH" ? "NSE · BSE" : c.exchange;
+
+  // Seed for the live (client-polled) price + metrics — DB snapshot is the
+  // server-rendered baseline, then /api/quote refreshes it during market hours.
+  const liveSeed = {
+    currentPrice: c.currentPrice,
+    dayChange: c.dayChange,
+    dayChangePct: c.dayChangePct,
+    marketCap: c.marketCap,
+    peRatio: c.peRatio,
+    pbRatio: c.pbRatio,
+    eps: c.eps,
+    bookValue: c.bookValue,
+    high52: c.high52,
+    low52: c.low52,
+    dividendYield: c.dividendYield,
+  };
   const description = c.longSummary?.trim() || companyDescription(c);
   const faqs = companyFaqs(c);
 
@@ -192,7 +212,7 @@ export default async function CompanyPage(
               {c.currentPrice != null && (
                 <div className="mt-5">
                   <p className="eyebrow mb-1">Share price</p>
-                  <PriceBadge price={c.currentPrice} changePct={c.dayChangePct} />
+                  <LivePrice symbol={c.yahooSymbol} seed={liveSeed} />
                 </div>
               )}
             </div>
@@ -201,9 +221,7 @@ export default async function CompanyPage(
               <p className="eyebrow">Market capitalisation</p>
               <div className="mt-2">
                 <MarketPulse>
-                  <span className="font-display tnum text-[40px] leading-none text-ink">
-                    {c.marketCap ? crFromCr(c.marketCap) : "—"}
-                  </span>
+                  <LiveMarketCap symbol={c.yahooSymbol} seed={liveSeed} />
                 </MarketPulse>
               </div>
               <p className="text-[12px] text-mute-2 mt-3 max-w-[260px]">
@@ -222,14 +240,7 @@ export default async function CompanyPage(
       {/* KEY METRICS */}
       <section className="max-w-[1280px] mx-auto px-6 pt-4 pb-12">
         <p className="eyebrow">01 · Key metrics</p>
-        <div className="mt-5 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-          <MetricCell label="Market cap" value={c.marketCap ? crFromCr(c.marketCap) : "—"} accent />
-          <MetricCell label="Current price" value={c.currentPrice ? inr(c.currentPrice) : "—"} hint={c.dayChangePct != null ? signedPct(c.dayChangePct) + " today" : undefined} />
-          <MetricCell label="52W high" value={c.high52 ? inr(c.high52) : "—"} />
-          <MetricCell label="52W low" value={c.low52 ? inr(c.low52) : "—"} />
-          <MetricCell label="Stock P/E" value={num(c.peRatio)} />
-          <MetricCell label="P/B ratio" value={num(c.pbRatio)} />
-        </div>
+        <LiveMetrics symbol={c.yahooSymbol} seed={liveSeed} />
       </section>
 
       {/* PER SHARE & RETURNS */}
@@ -365,9 +376,11 @@ export default async function CompanyPage(
               </Link>
             )}
           </header>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-            {related.map((r) => <CompanyCard key={r.id} c={r} />)}
-          </div>
+          <LiveQuoteProvider seed={seedQuotes(related)}>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {related.map((r) => <CompanyCard key={r.id} c={r} />)}
+            </div>
+          </LiveQuoteProvider>
         </section>
       )}
 
