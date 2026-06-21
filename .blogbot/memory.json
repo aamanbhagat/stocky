@@ -1,7 +1,7 @@
 {
   "version": 1,
   "siteBirth": "2026-06-19",
-  "lastRunAt": "2026-06-20T12:59:56.840Z",
+  "lastRunAt": "2026-06-21T05:11:34.132Z",
   "runs": [
     {
       "ts": "2026-06-20T12:49:28.994Z",
@@ -32,34 +32,49 @@
       "title": "What Is Free Float Market Capitalization in Nifty 50",
       "slug": "what-is-free-float-market-capitalization-in-nifty-50",
       "wordCount": 1997
+    },
+    {
+      "ts": "2026-06-21T05:11:34.132Z",
+      "phase": "seed",
+      "category": "companies",
+      "keywordTier": "long-tail",
+      "primaryKeyword": "how to read interest coverage ratio in Indian stocks",
+      "title": "How to Read Interest Coverage Ratio in Indian Stocks",
+      "slug": "how-to-read-interest-coverage-ratio-in-indian-stocks",
+      "wordCount": 2334
     }
   ],
   "usedKeywords": [
     "what is promoter pledging in Indian stocks",
     "how to read debt to equity ratio in Indian stocks",
-    "what is free float market capitalization in nifty 50"
+    "what is free float market capitalization in nifty 50",
+    "how to read interest coverage ratio in Indian stocks"
   ],
   "usedTitles": [
     "What Is Promoter Pledging in Indian Stocks? Explained",
     "How to Read Debt to Equity Ratio in Indian Stocks",
-    "What Is Free Float Market Capitalization in Nifty 50"
+    "What Is Free Float Market Capitalization in Nifty 50",
+    "How to Read Interest Coverage Ratio in Indian Stocks"
   ],
   "usedSlugs": [
     "what-is-promoter-pledging-in-indian-stocks-explained",
     "how-to-read-debt-to-equity-ratio-in-indian-stocks",
-    "what-is-free-float-market-capitalization-in-nifty-50"
+    "what-is-free-float-market-capitalization-in-nifty-50",
+    "how-to-read-interest-coverage-ratio-in-indian-stocks"
   ],
   "clusters": {
     "Fundamental Analysis": {
       "members": [
         "what-is-promoter-pledging-in-indian-stocks-explained",
         "how-to-read-debt-to-equity-ratio-in-indian-stocks",
-        "what-is-free-float-market-capitalization-in-nifty-50"
+        "what-is-free-float-market-capitalization-in-nifty-50",
+        "how-to-read-interest-coverage-ratio-in-indian-stocks"
       ],
       "primaryKeywords": [
         "what is promoter pledging in Indian stocks",
         "how to read debt to equity ratio in Indian stocks",
-        "what is free float market capitalization in nifty 50"
+        "what is free float market capitalization in nifty 50",
+        "how to read interest coverage ratio in Indian stocks"
       ]
     },
     "Promoter Holding": {
@@ -96,10 +111,12 @@
     },
     "Investing Basics": {
       "members": [
-        "how-to-read-debt-to-equity-ratio-in-indian-stocks"
+        "how-to-read-debt-to-equity-ratio-in-indian-stocks",
+        "how-to-read-interest-coverage-ratio-in-indian-stocks"
       ],
       "primaryKeywords": [
-        "how to read debt to equity ratio in Indian stocks"
+        "how to read debt to equity ratio in Indian stocks",
+        "how to read interest coverage ratio in Indian stocks"
       ]
     },
     "Balance Sheet": {
@@ -133,6 +150,14 @@
       "primaryKeywords": [
         "what is free float market capitalization in nifty 50"
       ]
+    },
+    "Fundamental Risk Analysis": {
+      "members": [
+        "how-to-read-interest-coverage-ratio-in-indian-stocks"
+      ],
+      "primaryKeywords": [
+        "how to read interest coverage ratio in Indian stocks"
+      ]
     }
   },
   "phaseHistory": [
@@ -142,6 +167,7 @@
     }
   ],
   "notes": [
-    "Next run, extend the fundamental risk metrics cluster by publishing a guide on the Interest Coverage Ratio, and internally link it to the Debt to Equity and Promoter Pledging posts to build a cohesive \"Fundamental Risk Analysis for FY 2026-27\" hub."
+    "Next run, extend the fundamental risk metrics cluster by publishing a guide on the Interest Coverage Ratio, and internally link it to the Debt to Equity and Promoter Pledging posts to build a cohesive \"Fundamental Risk Analysis for FY 2026-27\" hub.",
+    "Next run, target the keyword \"debt to equity ratio analysis for NSE companies\" to complete the fundamental solvency cluster, ensuring you internally link it to the Interest Coverage Ratio post using the anchor text \"solvency ratios.\" As a secondary priority, draft a sector piece analyzing high-debt"
   ]
 }
