@@ -1,10 +1,12 @@
-name: Daily stock data refresh
+name: Twice-daily stock data refresh
 
 on:
   schedule:
-    # 12:30 UTC = 18:00 IST, after the NSE/BSE close (15:30 IST) settles.
-    # Weekdays only — markets are shut on weekends.
-    - cron: "30 12 * * 1-5"
+    # Twice a day on weekdays (markets shut on weekends).
+    # 04:30 UTC = 10:00 IST — 45 min after NSE/BSE open (09:15 IST).
+    - cron: "30 4 * * 1-5"
+    # 11:00 UTC = 16:30 IST — 1 hr after NSE/BSE close (15:30 IST) settles.
+    - cron: "0 11 * * 1-5"
   workflow_dispatch:
     inputs:
       detailTop:
