@@ -4,11 +4,17 @@ import { SECTORS } from "@/lib/sectors";
 import { slugify } from "@/lib/slug";
 import { SITE_URL as SITE } from "@/lib/site";
 import { getAllPosts } from "@/lib/blog";
+import { SCREENS } from "@/lib/screens";
+import { getAllAuthors } from "@/lib/authors";
+import { seededComparePairs } from "@/lib/compare";
+
+const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const companies = await prisma.company.findMany({
     select: { slug: true, updatedAt: true },
   });
+  const comparePairs = await seededComparePairs();
 
   const now = new Date();
 
@@ -27,7 +33,54 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     })),
   ];
 
-  const staticPages = ["/about", "/contact", "/privacy", "/disclaimer"].map((p) => ({
+  // Curated list/screener pages — mid-tail, list-intent surfaces.
+  const stockListPages = [
+    {
+      url: `${SITE}/stocks`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    },
+    ...SCREENS.map((s) => ({
+      url: `${SITE}/stocks/${s.slug}`,
+      lastModified: now,
+      changeFrequency: "daily" as const,
+      priority: 0.7,
+    })),
+  ];
+
+  // A–Z crawl index (kills orphan company pages).
+  const browsePages = [
+    {
+      url: `${SITE}/browse`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.5,
+    },
+    ...LETTERS.map((l) => ({
+      url: `${SITE}/browse/${l}`,
+      lastModified: now,
+      changeFrequency: "weekly" as const,
+      priority: 0.4,
+    })),
+  ];
+
+  // Seeded, sector-adjacent comparison pages.
+  const comparePages = comparePairs.map((pair) => ({
+    url: `${SITE}/compare/${pair}`,
+    lastModified: now,
+    changeFrequency: "weekly" as const,
+    priority: 0.5,
+  }));
+
+  const authorPages = getAllAuthors().map((a) => ({
+    url: `${SITE}/authors/${a.slug}`,
+    lastModified: now,
+    changeFrequency: "monthly" as const,
+    priority: 0.3,
+  }));
+
+  const staticPages = ["/about", "/methodology", "/contact", "/privacy", "/disclaimer"].map((p) => ({
     url: `${SITE}${p}`,
     lastModified: now,
     changeFrequency: "monthly" as const,
@@ -65,7 +118,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),
+    ...stockListPages,
+    ...browsePages,
+    ...comparePages,
     ...staticPages,
+    ...authorPages,
     ...blogPages,
     ...companies.map((c) => ({
       url: `${SITE}/companies/${c.slug}`,

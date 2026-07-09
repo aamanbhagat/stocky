@@ -4,7 +4,8 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { SECTORS, sectorColor } from "@/lib/sectors";
 import { slugify } from "@/lib/slug";
-import { crFromCr } from "@/lib/format";
+import { crFromCr, num } from "@/lib/format";
+import { sectorIntro } from "@/lib/copy";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { AdSlot } from "@/components/AdSlot";
 import { LiveQuoteProvider } from "@/components/LiveQuoteProvider";
@@ -56,12 +57,20 @@ export default async function SectorPage({
       where: { sector },
       _sum: { marketCap: true },
       _count: { _all: true },
+      _avg: { peRatio: true },
     }),
   ]);
 
   const color = sectorColor(sector);
   const total = agg._count._all;
   const totalCap = agg._sum.marketCap ?? 0;
+  const avgPe = agg._avg.peRatio;
+  const topName = rows[0]?.name ?? null;
+  const intro = sectorIntro(sector, {
+    count: total,
+    totalCapLabel: crFromCr(totalCap),
+    topName,
+  });
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -124,8 +133,17 @@ export default async function SectorPage({
                   {crFromCr(totalCap)}
                 </dd>
               </div>
+              {avgPe != null && (
+                <div>
+                  <dt className="eyebrow">Average P/E</dt>
+                  <dd className="font-mono tnum text-[26px] mt-1 text-ink leading-none">
+                    {num(avgPe)}
+                  </dd>
+                </div>
+              )}
             </dl>
           </div>
+          <p className="text-mute text-[15px] mt-7 max-w-3xl leading-relaxed">{intro}</p>
         </div>
       </div>
 

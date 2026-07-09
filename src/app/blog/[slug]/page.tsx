@@ -7,6 +7,7 @@ import rehypeSlug from "rehype-slug";
 import rehypeAutolinkHeadings from "rehype-autolink-headings";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { getAllPostSlugs, getPostBySlug, getRelatedPosts } from "@/lib/blog";
+import { getAuthor } from "@/lib/authors";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://financecity.me";
 const SITE_NAME = "FinanceCity";
@@ -60,6 +61,7 @@ export default async function BlogPost({ params }: Params) {
   const { frontmatter: fm } = post;
   const url = `${SITE_URL}/blog/${slug}`;
   const related = getRelatedPosts(post, 3);
+  const author = getAuthor(fm.author);
 
   const schemas = [
     {
@@ -70,8 +72,17 @@ export default async function BlogPost({ params }: Params) {
       datePublished: fm.publishedAt,
       dateModified: fm.updatedAt || fm.publishedAt,
       image: fm.cover ? `${SITE_URL}${fm.cover}` : undefined,
-      author: { "@type": "Organization", name: SITE_NAME },
-      publisher: { "@type": "Organization", name: SITE_NAME },
+      author: {
+        "@type": "Person",
+        name: author.name,
+        url: `${SITE_URL}/authors/${author.slug}`,
+        ...(author.sameAs?.length ? { sameAs: author.sameAs } : {}),
+      },
+      publisher: {
+        "@type": "Organization",
+        name: SITE_NAME,
+        logo: { "@type": "ImageObject", url: `${SITE_URL}/icon.svg` },
+      },
       mainEntityOfPage: { "@type": "WebPage", "@id": url },
     },
     {
@@ -107,6 +118,13 @@ export default async function BlogPost({ params }: Params) {
         <span>{fmtDate(fm.publishedAt)}</span>
         <span className="text-rule-strong">/</span>
         <span>{post.readingTimeMinutes} min read</span>
+        <span className="text-rule-strong">/</span>
+        <span>
+          By{" "}
+          <Link href={`/authors/${author.slug}`} className="text-saffron-dim hover:underline">
+            {author.name}
+          </Link>
+        </span>
       </p>
 
       {fm.cover && (

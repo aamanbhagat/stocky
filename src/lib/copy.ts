@@ -5,7 +5,7 @@
  * real LLM pass during seeding if/when keys are available.
  */
 import type { Company } from "@prisma/client";
-import { crFromCr } from "./format";
+import { crFromCr, inr, pct, ratio, compactDate } from "./format";
 
 const SECTOR_BLURBS: Record<string, string> = {
   "Financial Services":
@@ -88,29 +88,110 @@ export function companyDescription(c: Company): string {
   return [para1, para2, para3].join("\n\n");
 }
 
+/**
+ * Programmatic, data-driven FAQ set. Each entry maps to a real "People Also Ask"
+ * style query and is built only when the underlying datum exists — this both
+ * captures long-tail question intent and keeps the answer set unique per company
+ * (fewer identical boilerplate blocks across the corpus).
+ */
+/**
+ * Unique intro paragraph for a sector listing page. Uniqueness comes from the
+ * live counts/market-cap plus the sector blurb, so no two sector pages read the
+ * same — and it gives the page real body copy to rank for "<sector> stocks".
+ */
+export function sectorIntro(
+  sector: string,
+  stats: { count: number; totalCapLabel: string; topName?: string | null },
+): string {
+  const blurb = SECTOR_BLURBS[sector] ?? SECTOR_BLURBS["Diversified"];
+  const noun = stats.count === 1 ? "company" : "companies";
+  const top = stats.topName ? ` The largest by market value is ${stats.topName}.` : "";
+  return (
+    `FinanceCity tracks ${stats.count.toLocaleString("en-IN")} ${sector} ${noun} listed on the NSE and BSE, ` +
+    `with a combined market capitalisation of about ${stats.totalCapLabel}.${top} ` +
+    `A typical company in this group ${blurb}. ` +
+    `Each listing below links to a full profile — live share price, market cap, P/E, ROE, CIN, ISIN and the latest promoter and institutional shareholding.`
+  );
+}
+
 export function companyFaqs(c: Company): Array<{ q: string; a: string }> {
   const name = formalize(c.name);
+  const sym = c.symbol;
   const cap = c.marketCap ? crFromCr(c.marketCap) : "not currently tracked in this database";
-  return [
-    {
-      q: `What is the CIN of ${name}?`,
-      a: c.cin
-        ? `The Corporate Identity Number (CIN) of ${name} is ${c.cin}.`
-        : `The Corporate Identity Number for ${name} is published in the MCA21 corporate master. FinanceCity backfills CIN values during weekly refreshes.`,
-    },
-    {
-      q: `Who are the promoters of ${name}?`,
+  const exFull =
+    c.exchange === "BOTH"
+      ? "both the NSE and the BSE"
+      : c.exchange === "NSE"
+        ? "the NSE (National Stock Exchange)"
+        : "the BSE (Bombay Stock Exchange)";
+
+  const faqs: Array<{ q: string; a: string }> = [];
+
+  if (c.currentPrice != null) {
+    faqs.push({
+      q: `What is the share price of ${name} today?`,
+      a: `The latest tracked share price of ${name} (${sym}) is ${inr(c.currentPrice)}${c.pricedAt ? `, as of ${compactDate(c.pricedAt)}` : ""}. Quotes on ${c.exchange === "BSE" ? "the BSE" : "the NSE"} move through the trading day (9:15–15:30 IST, weekdays).`,
+    });
+  }
+
+  faqs.push({
+    q: `Is ${name} listed on the NSE or BSE?`,
+    a: `${name} (${sym}) is listed on ${exFull}.${c.isin ? ` Its shares trade under ISIN ${c.isin}.` : ""}${c.bseCode ? ` Its BSE scrip code is ${c.bseCode}.` : ""}`,
+  });
+
+  faqs.push({
+    q: `What is the CIN of ${name}?`,
+    a: c.cin
+      ? `The Corporate Identity Number (CIN) of ${name} is ${c.cin}.`
+      : `The Corporate Identity Number for ${name} is published in the MCA21 corporate master. FinanceCity backfills CIN values during weekly refreshes.`,
+  });
+
+  faqs.push({
+    q: `What is the market capitalisation of ${name}?`,
+    a: c.marketCap
+      ? `${name} (${sym}) has a market capitalisation of approximately ${cap}, reflecting the most recent refresh from exchange data.`
+      : `Market capitalisation for ${name} will appear here once it is published in the next refresh from exchange archives.`,
+  });
+
+  if (c.high52 != null || c.low52 != null) {
+    faqs.push({
+      q: `What is the 52-week high and low of ${sym}?`,
+      a: `Over the trailing 52 weeks, ${sym} has traded between a low of ${inr(c.low52)} and a high of ${inr(c.high52)}. The current price relative to this range is a common gauge of momentum.`,
+    });
+  }
+
+  faqs.push({
+    q: `Does ${name} pay a dividend?`,
+    a:
+      c.dividendYield != null && c.dividendYield > 0
+        ? `Yes — ${name} (${sym}) currently shows a trailing dividend yield of about ${pct(c.dividendYield)}. Dividend policy can change each financial year, so confirm against the latest company filings.`
+        : `${name} (${sym}) does not currently show a trailing dividend yield in our data. Companies can begin or change dividends each financial year, so check the most recent filings.`,
+  });
+
+  if (c.peRatio != null) {
+    faqs.push({
+      q: `What is the P/E ratio of ${sym}?`,
+      a: `${name} trades at a price-to-earnings (P/E) ratio of approximately ${ratio(c.peRatio)}${c.eps != null ? `, on trailing earnings per share of ${inr(c.eps)}` : ""}.`,
+    });
+  }
+
+  if (c.debtToEquity != null) {
+    faqs.push({
+      q: `Is ${name} debt-free?`,
       a:
-        c.promoterHolding != null
-          ? `Promoter holding in ${c.symbol} is approximately ${c.promoterHolding.toFixed(2)}%, as disclosed in the latest published shareholding pattern.`
-          : `Promoter and group-holding details for ${name} are disclosed quarterly via stock-exchange filings. Detailed pattern is refreshed weekly here from BSE and NSE corporate filings.`,
-    },
-    {
-      q: `What is the market capitalisation of ${name}?`,
-      a:
-        c.marketCap
-          ? `${name} (${c.symbol}) has a market capitalisation of approximately ${cap}, reflecting the most recent weekly refresh from the BSE scrip master.`
-          : `Market capitalisation for ${name} will appear here once it is published in the next weekly refresh from exchange archives.`,
-    },
-  ];
+        c.debtToEquity <= 0.05
+          ? `${name} (${sym}) carries little to no debt — its debt-to-equity ratio is about ${ratio(c.debtToEquity)}, effectively debt-free.`
+          : `${name} (${sym}) is not debt-free; its debt-to-equity ratio is about ${ratio(c.debtToEquity)}.`,
+    });
+  }
+
+  faqs.push({
+    q: `Who are the promoters of ${name}?`,
+    a:
+      c.promoterHolding != null
+        ? `Promoter holding in ${sym} is approximately ${c.promoterHolding.toFixed(2)}%, as disclosed in the latest published shareholding pattern.`
+        : `Promoter and group-holding details for ${name} are disclosed quarterly via stock-exchange filings, and refreshed here from BSE and NSE corporate filings.`,
+  });
+
+  return faqs;
 }

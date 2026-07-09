@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { yahooAuth, fetchQuotes } from "@/lib/yahoo";
+import { SITE_URL as SITE } from "@/lib/site";
+import { SECTORS } from "@/lib/sectors";
+import { slugify } from "@/lib/slug";
+import { SCREENS } from "@/lib/screens";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -18,6 +22,27 @@ function authorized(req: Request): boolean {
 }
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/**
+ * IndexNow — instantly tells Bing/Yandex (and, increasingly, other engines) that
+ * pages changed, so a young site gets recrawled faster. Best-effort: never
+ * throws into the cron response. Requires INDEXNOW_KEY and the key text hosted
+ * at `${SITE}/<key>.txt` (drop `public/<key>.txt` containing exactly the key).
+ */
+async function submitIndexNow(key: string, urlList: string[]): Promise<number> {
+  const host = SITE.replace(/^https?:\/\//, "");
+  try {
+    const res = await fetch("https://api.indexnow.org/indexnow", {
+      method: "POST",
+      headers: { "Content-Type": "application/json; charset=utf-8" },
+      body: JSON.stringify({ host, key, keyLocation: `${SITE}/${key}.txt`, urlList }),
+      signal: AbortSignal.timeout(8000),
+    });
+    return res.ok ? urlList.length : 0;
+  } catch {
+    return 0;
+  }
+}
 
 export async function GET(req: Request) {
   if (!authorized(req)) {
@@ -85,14 +110,46 @@ export async function GET(req: Request) {
     revalidatePath("/companies");
     revalidatePath("/exchange/nse");
     revalidatePath("/exchange/bse");
+    revalidatePath("/stocks");
+    for (const s of SCREENS) revalidatePath(`/stocks/${s.slug}`);
     revalidateTag("companies", "max");
+
+    // Freshness signal: nudge search engines to recrawl the highest-value URLs.
+    // Bounded set (core + sectors + screens + top-cap companies) so we never
+    // spam the full corpus. No-op unless INDEXNOW_KEY is configured.
+    let submitted = 0;
+    const indexNowKey = process.env.INDEXNOW_KEY;
+    if (indexNowKey) {
+      try {
+        const top = await prisma.company.findMany({
+          where: { marketCap: { not: null } },
+          orderBy: { marketCap: "desc" },
+          take: 200,
+          select: { slug: true },
+        });
+        const urls = [
+          `${SITE}/`,
+          `${SITE}/companies`,
+          `${SITE}/stocks`,
+          `${SITE}/browse`,
+          `${SITE}/exchange/nse`,
+          `${SITE}/exchange/bse`,
+          ...SECTORS.map((s) => `${SITE}/sector/${slugify(s)}`),
+          ...SCREENS.map((s) => `${SITE}/stocks/${s.slug}`),
+          ...top.map((c) => `${SITE}/companies/${c.slug}`),
+        ];
+        submitted = await submitIndexNow(indexNowKey, urls);
+      } catch {
+        // best-effort only
+      }
+    }
 
     await prisma.updateLog.create({
       data: {
         job: "cron:update-market-cap",
         ok: updated,
         failed,
-        notes: `symbols=${symbols.length} ms=${Date.now() - start}`,
+        notes: `symbols=${symbols.length} ms=${Date.now() - start} indexnow=${submitted}`,
       },
     });
 
@@ -100,6 +157,7 @@ export async function GET(req: Request) {
       ok: true,
       updated,
       failed,
+      submitted,
       elapsedMs: Date.now() - start,
       errors: errors.length ? errors : undefined,
     });

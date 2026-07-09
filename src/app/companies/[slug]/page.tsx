@@ -6,6 +6,7 @@ import { sectorColor } from "@/lib/sectors";
 import { slugify } from "@/lib/slug";
 import { crFromCr, inr, num, pct, ratio, signedPct, compactDate } from "@/lib/format";
 import { companyDescription, companyFaqs } from "@/lib/copy";
+import { getAllPostSlugs } from "@/lib/blog";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { MetricCell } from "@/components/MetricCell";
 import { Shareholding } from "@/components/Shareholding";
@@ -40,12 +41,15 @@ export async function generateMetadata(
   if (!c) return { title: "Company not found" };
 
   const ex = c.exchange === "BOTH" ? "NSE & BSE" : c.exchange;
-  const pricePhrase = c.currentPrice ? `Share price ₹${c.currentPrice.toFixed(2)}. ` : "";
+  const asOf = c.pricedAt ? ` (as of ${compactDate(c.pricedAt)})` : "";
+  const pricePhrase = c.currentPrice ? `Share price ₹${c.currentPrice.toFixed(2)}${asOf}. ` : "";
   const capPhrase = c.marketCap ? `Market cap ${crFromCr(c.marketCap)}. ` : "";
   const promPhrase =
     c.promoterHolding != null ? `Promoter holding ${c.promoterHolding.toFixed(2)}%. ` : "";
 
-  const title = `${c.name} (${c.symbol}) Share Price, CIN, Promoters`;
+  // "Today" is an evergreen, high-intent modifier for price queries; the visible
+  // "Last updated" date on the page carries the actual freshness signal.
+  const title = `${c.name} (${c.symbol}) Share Price Today, CIN & Promoters`;
   const description =
     `${c.name} is listed on ${ex}. ` +
     pricePhrase +
@@ -70,7 +74,13 @@ export async function generateMetadata(
     ].filter(Boolean),
     alternates: {
       canonical: `/companies/${c.slug}`,
-      languages: { "en-IN": `/companies/${c.slug}` },
+      // Indian equities draw a large NRI / foreign-investor audience (Gulf, UK,
+      // US) — don't geo-lock to en-IN; expose generic en + x-default too.
+      languages: {
+        "en-IN": `/companies/${c.slug}`,
+        en: `/companies/${c.slug}`,
+        "x-default": `/companies/${c.slug}`,
+      },
     },
     openGraph: {
       type: "website",
@@ -116,6 +126,24 @@ export default async function CompanyPage(
   };
   const description = c.longSummary?.trim() || companyDescription(c);
   const faqs = companyFaqs(c);
+
+  // Internal links from every company page into the blog explainer cluster —
+  // relevant for readers and a large, topical internal-link boost to those posts.
+  // Guarded by which posts actually exist so it never links a 404.
+  const postSlugs = new Set(getAllPostSlugs());
+  const relatedReading = (
+    [
+      ["return-on-equity-explained-for-indian-stocks-with-examples", "Return on equity (ROE)"],
+      ["how-to-read-debt-to-equity-ratio-in-indian-stocks", "Debt-to-equity ratio"],
+      ["how-to-read-price-to-book-ratio-in-indian-stocks", "Price-to-book ratio"],
+      ["how-to-read-earnings-per-share-in-indian-stocks", "Earnings per share (EPS)"],
+      ["how-to-read-book-value-per-share-in-indian-stocks", "Book value per share"],
+      ["what-is-promoter-pledging-in-indian-stocks-explained", "Promoter pledging"],
+      ["how-to-read-balance-sheet-of-indian-stocks", "Reading a balance sheet"],
+    ] as const
+  )
+    .filter(([slug]) => postSlugs.has(slug))
+    .map(([slug, label]) => ({ href: `/blog/${slug}`, label }));
 
   const hasFinancials =
     c.revenue != null || c.netProfit != null || c.ebitda != null ||
@@ -213,6 +241,11 @@ export default async function CompanyPage(
                 <div className="mt-5">
                   <p className="eyebrow mb-1">Share price</p>
                   <LivePrice symbol={c.yahooSymbol} seed={liveSeed} />
+                  {c.pricedAt && (
+                    <p className="text-[12px] text-mute-2 mt-2">
+                      Last updated {compactDate(c.pricedAt)}
+                    </p>
+                  )}
                 </div>
               )}
             </div>
@@ -344,6 +377,18 @@ export default async function CompanyPage(
         <div className="text-[16px] text-ink-soft leading-[1.7] max-w-3xl whitespace-pre-wrap">
           {description}
         </div>
+        {relatedReading.length > 0 && (
+          <div className="mt-8 flex flex-wrap items-baseline gap-x-5 gap-y-2 text-[14px]">
+            <span className="text-mute-2 uppercase tracking-wider text-[12px] font-semibold">
+              Learn the metrics
+            </span>
+            {relatedReading.map((r) => (
+              <Link key={r.href} href={r.href} className="text-saffron-dim hover:underline">
+                {r.label}
+              </Link>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* FAQ */}
@@ -381,6 +426,20 @@ export default async function CompanyPage(
               {related.map((r) => <CompanyCard key={r.id} c={r} />)}
             </div>
           </LiveQuoteProvider>
+          <div className="mt-6 flex flex-wrap items-baseline gap-x-5 gap-y-2 text-[14px]">
+            <span className="text-mute-2 uppercase tracking-wider text-[12px] font-semibold">
+              Compare {c.symbol} with
+            </span>
+            {related.slice(0, 4).map((r) => (
+              <Link
+                key={r.id}
+                href={`/compare/${[c.slug, r.slug].sort().join("-vs-")}`}
+                className="text-saffron-dim hover:underline"
+              >
+                {r.symbol}
+              </Link>
+            ))}
+          </div>
         </section>
       )}
 

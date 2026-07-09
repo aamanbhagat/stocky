@@ -13,13 +13,6 @@ import { seedQuotes } from "@/lib/liveSeed";
 
 export const revalidate = 3600;
 
-export const metadata: Metadata = {
-  title: "All NSE & BSE Listed Companies — Browse Directory",
-  description:
-    "Browse the complete directory of every company listed on NSE and BSE. Filter by sector, exchange, market cap. Free, structured, weekly-updated.",
-  alternates: { canonical: "/companies" },
-};
-
 const PER_PAGE = 50;
 
 type SP = {
@@ -29,6 +22,36 @@ type SP = {
   sort?: "cap" | "az";
   page?: string;
 };
+
+// Faceted/paginated directory states dilute crawl budget and duplicate the
+// clean sector/exchange pages (which are separately indexable and in the
+// sitemap). Keep the bare /companies indexable with a self-canonical; for any
+// filtered or deep-paginated view emit noindex,follow. We deliberately do NOT
+// also set rel=canonical there — Google treats noindex + canonical as
+// conflicting signals — and rely on noindex,follow to drop the URL while still
+// letting crawl equity flow through to the linked company pages.
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SP>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const page = Math.max(1, parseInt(sp.page ?? "1", 10) || 1);
+  const q = (sp.q ?? "").trim();
+  const sector = (sp.sector ?? "").trim();
+  const exchange = (sp.exchange ?? "").trim().toLowerCase();
+  const isFiltered = Boolean(q || sector || exchange) || page > 1;
+
+  const base = {
+    title: "All NSE & BSE Listed Companies — Browse Directory",
+    description:
+      "Browse the complete directory of every company listed on NSE and BSE. Filter by sector, exchange, market cap. Free, structured, weekly-updated.",
+  };
+
+  return isFiltered
+    ? { ...base, robots: { index: false, follow: true } }
+    : { ...base, alternates: { canonical: "/companies" } };
+}
 
 export default async function Directory({
   searchParams,

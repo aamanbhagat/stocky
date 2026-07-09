@@ -18,6 +18,8 @@ export function SiteFooter() {
           <p className="eyebrow text-paper/60">Browse</p>
           <ul className="mt-3 space-y-1.5 text-[13px]">
             <li><Link href="/companies" className="hover:text-saffron">All companies</Link></li>
+            <li><Link href="/browse" className="hover:text-saffron">Browse A–Z</Link></li>
+            <li><Link href="/stocks" className="hover:text-saffron">Stock lists</Link></li>
             <li><Link href="/exchange/nse" className="hover:text-saffron">NSE listings</Link></li>
             <li><Link href="/exchange/bse" className="hover:text-saffron">BSE listings</Link></li>
             <li><Link href="/sitemap.xml" className="hover:text-saffron">Sitemap</Link></li>
@@ -27,6 +29,7 @@ export function SiteFooter() {
           <p className="eyebrow text-paper/60">About</p>
           <ul className="mt-3 space-y-1.5 text-[13px]">
             <li><Link href="/about" className="hover:text-saffron">About &amp; sources</Link></li>
+            <li><Link href="/methodology" className="hover:text-saffron">Data methodology</Link></li>
             <li><Link href="/disclaimer" className="hover:text-saffron">Disclaimer</Link></li>
             <li><Link href="/privacy" className="hover:text-saffron">Privacy policy</Link></li>
             <li><Link href="/contact" className="hover:text-saffron">Contact</Link></li>
