@@ -1,16 +1,17 @@
-name: Weekly deep financials backfill
+name: Deep financials backfill (manual)
 
-# The twice-daily job (stock-daily.yml) only pulls DETAILED financials +
-# business summary for the top ~1500 by cap. That leaves the long tail as
-# boilerplate, which Google tends to leave "Crawled - currently not indexed".
-# This weekly pass runs the detailed enrichment across the ENTIRE universe so
-# far more pages carry unique data (esp. longSummary) and become index-worthy.
-# Business descriptions rarely change, so weekly is plenty and keeps Yahoo load
-# off the twice-daily freshness job.
+# On-demand deep enrichment across the ENTIRE company universe: runs the
+# detailed (Phase B) Yahoo pull for every company so far more pages carry unique
+# data — especially the business summary (longSummary) — which is the biggest
+# lever to move thin long-tail pages out of "Crawled - currently not indexed".
+#
+# Intentionally NOT scheduled — nothing runs automatically, so this workflow can
+# never fail on its own. Trigger it yourself from the Actions tab when you want a
+# refresh. Requires the repo secrets DATABASE_URL + TURSO_AUTH_TOKEN (the same
+# ones the app uses); business descriptions rarely change, so running it once
+# now and occasionally thereafter is plenty.
 
 on:
-  schedule:
-    - cron: "0 20 * * 6" # Saturday 20:00 UTC — weekend, off-peak
   workflow_dispatch:
     inputs:
       detailTop:
