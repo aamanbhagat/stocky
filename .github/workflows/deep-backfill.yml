@@ -1,0 +1,51 @@
+name: Weekly deep financials backfill
+
+# The twice-daily job (stock-daily.yml) only pulls DETAILED financials +
+# business summary for the top ~1500 by cap. That leaves the long tail as
+# boilerplate, which Google tends to leave "Crawled - currently not indexed".
+# This weekly pass runs the detailed enrichment across the ENTIRE universe so
+# far more pages carry unique data (esp. longSummary) and become index-worthy.
+# Business descriptions rarely change, so weekly is plenty and keeps Yahoo load
+# off the twice-daily freshness job.
+
+on:
+  schedule:
+    - cron: "0 20 * * 6" # Saturday 20:00 UTC — weekend, off-peak
+  workflow_dispatch:
+    inputs:
+      detailTop:
+        description: "How many companies get the detailed (Phase B) pull"
+        default: "5010"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deep-backfill
+  cancel-in-progress: false
+
+jobs:
+  backfill:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install deps (runs prisma generate via postinstall)
+        run: pnpm install --frozen-lockfile
+
+      - name: Deep-enrich ALL companies (financials + business summary → Turso)
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          TURSO_AUTH_TOKEN: ${{ secrets.TURSO_AUTH_TOKEN }}
+          DETAIL_TOP: ${{ github.event.inputs.detailTop || '5010' }}
+        run: pnpm enrich:fin

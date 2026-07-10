@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { sectorColor } from "@/lib/sectors";
 import { slugify } from "@/lib/slug";
 import { crFromCr, inr, num, pct, ratio, signedPct, compactDate } from "@/lib/format";
-import { companyDescription, companyFaqs } from "@/lib/copy";
+import { companyDescription, companyFaqs, isThinCompany } from "@/lib/copy";
 import { getAllPostSlugs } from "@/lib/blog";
 import { Breadcrumb } from "@/components/Breadcrumb";
 import { MetricCell } from "@/components/MetricCell";
@@ -82,6 +82,9 @@ export async function generateMetadata(
         "x-default": `/companies/${c.slug}`,
       },
     },
+    // Keep genuine junk (non-equity fund rows / empty shells) out of the index
+    // so it can't drag site-wide quality; real stock pages stay indexable.
+    ...(isThinCompany(c) ? { robots: { index: false, follow: true } } : {}),
     openGraph: {
       type: "website",
       url: `${SITE}/companies/${c.slug}`,

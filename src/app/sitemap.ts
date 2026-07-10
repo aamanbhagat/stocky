@@ -7,12 +7,25 @@ import { getAllPosts } from "@/lib/blog";
 import { SCREENS } from "@/lib/screens";
 import { getAllAuthors } from "@/lib/authors";
 import { seededComparePairs } from "@/lib/compare";
+import { isThinCompany } from "@/lib/copy";
 
 const LETTERS = "abcdefghijklmnopqrstuvwxyz".split("");
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const companies = await prisma.company.findMany({
-    select: { slug: true, updatedAt: true },
+    select: {
+      slug: true,
+      updatedAt: true,
+      name: true,
+      currentPrice: true,
+      marketCap: true,
+      revenue: true,
+      netProfit: true,
+      roe: true,
+      eps: true,
+      promoterHolding: true,
+      institutionalHolding: true,
+    },
   });
   const comparePairs = await seededComparePairs();
 
@@ -124,11 +137,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticPages,
     ...authorPages,
     ...blogPages,
-    ...companies.map((c) => ({
-      url: `${SITE}/companies/${c.slug}`,
-      lastModified: c.updatedAt,
-      changeFrequency: "weekly" as const,
-      priority: 0.8,
-    })),
+    ...companies
+      .filter((c) => !isThinCompany(c))
+      .map((c) => ({
+        url: `${SITE}/companies/${c.slug}`,
+        lastModified: c.updatedAt,
+        changeFrequency: "weekly" as const,
+        priority: 0.8,
+      })),
   ];
 }

@@ -52,6 +52,42 @@ const SECTOR_BLURBS: Record<string, string> = {
 
 const formalize = (name: string) => name.replace(/\s+ltd$/i, " Limited");
 
+/**
+ * A company page is "thin" for SEO when it is not a tradable equity (mutual-fund
+ * / AMC master rows leak in from the source lists) or carries essentially no
+ * data — only boilerplate would render. We noindex these and drop them from the
+ * sitemap so Google's view of the corpus stays high-quality, while keeping every
+ * real stock page (even a tiny micro-cap with just a price) fully indexable.
+ * Note: matches "… Mutual Fund" fund rows, NOT listed AMC equities like
+ * "HDFC Asset Management Company Ltd".
+ */
+type ThinInput = Pick<
+  Company,
+  | "name"
+  | "currentPrice"
+  | "marketCap"
+  | "revenue"
+  | "netProfit"
+  | "roe"
+  | "eps"
+  | "promoterHolding"
+  | "institutionalHolding"
+>;
+
+export function isThinCompany(c: ThinInput): boolean {
+  if (/mutual fund/i.test(c.name)) return true;
+  const hasData =
+    c.currentPrice != null ||
+    c.marketCap != null ||
+    c.revenue != null ||
+    c.netProfit != null ||
+    c.roe != null ||
+    c.eps != null ||
+    c.promoterHolding != null ||
+    c.institutionalHolding != null;
+  return !hasData;
+}
+
 export function companyDescription(c: Company): string {
   const name = formalize(c.name);
   const ex =
